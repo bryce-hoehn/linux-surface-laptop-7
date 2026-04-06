@@ -62,11 +62,6 @@ sudo apt install ./*.deb
 sudo reboot
 ```
 
-
-### Firmware blobs
-
-Firmware blobs can be installed by running [romulus-firmware-extract.sh](https://github.com/giantdwarf17/linux-surface-laptop-7/blob/main/romulus-firmware-extract.sh) as root. Requires internet access and msitools.
-
 ## Tips & Tricks
 
 ### Booting outdated images (Plucky and before)
