@@ -5,11 +5,6 @@ FW_URL="https://git.codelinaro.org/clo/ath-firmware/ath12k-firmware/-/raw/main/W
 BDENCODER_URL="https://raw.githubusercontent.com/qca/qca-swiss-army-knife/master/tools/scripts/ath12k/ath12k-bdencoder"
 FW_DIR="/lib/firmware/ath12k/WCN7850/hw2.0"
 
-# The entry in the JSON above where we are going to insert
-MATCH_NAME="bus=pci,vendor=17cb,device=1107,subsystem-vendor=17cb,subsystem-device=3378,qmi-chip-id=2,qmi-board-id=255"
-# The entry to insert
-NEW_DEVICE_STRING="bus=pci,vendor=17cb,device=1107,subsystem-vendor=17cb,subsystem-device=XXXX,qmi-chip-id=2,qmi-board-id=255"
-
 tmp=$(mktemp -d)
 cleanup() {
   popd >/dev/null || true
@@ -35,7 +30,7 @@ import json
 import sys
 
 match_name = "bus=pci,vendor=17cb,device=1107,subsystem-vendor=17cb,subsystem-device=3378,qmi-chip-id=2,qmi-board-id=255"
-new_name = "bus=pci,vendor=17cb,device=1107,subsystem-vendor=17cb,subsystem-device=XXXX,qmi-chip-id=2,qmi-board-id=255"
+new_name = "bus=pci,vendor=17cb,device=1107,subsystem-vendor=17cb,subsystem-device=1107,qmi-chip-id=2,qmi-board-id=255"
 
 with open("board-2.json", "r", encoding="utf-8") as f:
     data = json.load(f)
