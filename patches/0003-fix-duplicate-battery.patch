@@ -1,0 +1,46 @@
+--- a/drivers/power/supply/surface_battery.c
++++ b/drivers/power/supply/surface_battery.c
+@@ -11,6 +11,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/of.h>
+ #include <linux/power_supply.h>
+ #include <linux/sysfs.h>
+ #include <linux/types.h>
+@@ -817,6 +818,12 @@
+ static int surface_battery_probe(struct ssam_device *sdev)
+ {
+ 	const struct spwr_psy_properties *p;
++
++	/* On Surface Laptop 7 ARM, battery is managed by qcom_battmgr. */
++	if (of_machine_is_compatible("microsoft,romulus13") ||
++	    of_machine_is_compatible("microsoft,romulus15"))
++		return -ENODEV;
++
+ 	struct spwr_battery_device *bat;
+ 
+ 	p = ssam_device_get_match_data(sdev);
+--- a/drivers/power/supply/surface_charger.c
++++ b/drivers/power/supply/surface_charger.c
+@@ -10,6 +10,7 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/mutex.h>
++#include <linux/of.h>
+ #include <linux/power_supply.h>
+ #include <linux/types.h>
+ 
+@@ -231,6 +232,12 @@
+ static int surface_ac_probe(struct ssam_device *sdev)
+ {
+ 	const struct spwr_psy_properties *p;
++
++	/* On Surface Laptop 7 ARM, charging is managed by qcom_battmgr. */
++	if (of_machine_is_compatible("microsoft,romulus13") ||
++	    of_machine_is_compatible("microsoft,romulus15"))
++		return -ENODEV;
++
+ 	struct spwr_ac_device *ac;
+ 
+ 	p = ssam_device_get_match_data(sdev);
