@@ -19,7 +19,7 @@ Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-
 | Bluetooth                 |       ✅      |  [#6](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/6)                                                                                                                                                          |
 | Audio                     |       ✅      |  [#2](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/2) |
 | Touchscreen               |       ❌      |     [#13](https://github.com/bryce-hoehn/linux-surface-laptop-7/issues/13)                                                                                                                                                       |
-| Touchpad               |       ❌      |     https://github.com/giantdwarf17/linux-surface-laptop-7/issues/5            |
+| Touchpad               |       ⚠️      |     Seems to partially work via mouse emulation with manual setup https://github.com/giantdwarf17/linux-surface-laptop-7/issues/5            |
 | Keyboard             |       ✅      |                                                                                        |
 | Lid switch/suspend        |       ✅      | https://github.com/giantdwarf17/linux-surface-laptop-7/issues/7#issuecomment-2750000739                                                                                                                                      |
 | Webcam |       ✅      |     https://github.com/giantdwarf17/linux-surface-laptop-7/issues/4              |
@@ -64,16 +64,8 @@ sudo reboot
 
 ## Tips & Tricks
 
-### Booting outdated images (Plucky and before)
-Attempting to boot the ubuntu-concept image will fail unless you specify the device tree in the GRUB config. 
-
-Press 'e' in grub when it shows the boot options and then replacing '$dtb' with 'devicetree /casper/x1e80100-microsoft-romulus13.dtb'"
-**This is not a problem running Resolute or Questing** - only older versions 
-
 ### Fixing Firefox crashes
-There is an issue in the Firefox snap package that causes it to crash whenever you use the scroll wheel. The workaround is to switch to the .deb version.
-
-I did so by following these instructions: [https://askubuntu.com/a/1404401]
+If you experience any issues with Firefox, try switching from snap to the .deb or flatpak package.
 
 # Credits
 * dwhinham for readme template and patches from Surface Pro 11: https://github.com/dwhinham/linux-surface-pro-11
