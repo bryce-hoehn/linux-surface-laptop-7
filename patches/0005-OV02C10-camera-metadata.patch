@@ -1,0 +1,107 @@
+commit 285082c05db03e729ac0fee94336687cc6be1aa6 (HEAD -> local/romulus-webcam-wip)
+Author: Oliver White <oliverjwhite07@gmail.com>
+Date:   Thu Apr 9 18:33:48 2026 +1200
+
+    media: ov02c10: report crop metadata for libcamera
+
+diff --git a/drivers/media/i2c/ov02c10.c b/drivers/media/i2c/ov02c10.c
+index cf93d36032e1..be4d8b3e7d73 100644
+--- a/drivers/media/i2c/ov02c10.c
++++ b/drivers/media/i2c/ov02c10.c
+@@ -59,6 +59,27 @@
+ #define OV02C10_REG_TEST_PATTERN               CCI_REG8(0x4503)
+ #define OV02C10_TEST_PATTERN_ENABLE            BIT(7)
+
++/*
++ * The mode programs a 1936x1096 readout window and outputs a centered
++ * 1928x1092 active image from it.
++ */
++#define OV02C10_NATIVE_WIDTH           1936
++#define OV02C10_NATIVE_HEIGHT          1096
++
++static const struct v4l2_rect ov02c10_native_area = {
++       .left = 0,
++       .top = 0,
++       .width = OV02C10_NATIVE_WIDTH,
++       .height = OV02C10_NATIVE_HEIGHT,
++};
++
++static const struct v4l2_rect ov02c10_active_area = {
++       .left = 4,
++       .top = 2,
++       .width = 1928,
++       .height = 1092,
++};
++
+ struct ov02c10_mode {
+        /* Frame width in pixels */
+        u32 width;
+@@ -706,10 +727,13 @@ static int ov02c10_set_format(struct v4l2_subdev *sd,
+ {
+        const struct ov02c10_mode *mode = &supported_modes[0];
+        struct ov02c10 *ov02c10 = to_ov02c10(sd);
++       struct v4l2_rect *crop;
+        s32 vblank_def, h_blank;
+
+        ov02c10_update_pad_format(mode, &fmt->format);
+        *v4l2_subdev_state_get_format(sd_state, fmt->pad) = fmt->format;
++       crop = v4l2_subdev_state_get_crop(sd_state, fmt->pad);
++       *crop = ov02c10_active_area;
++       *crop = ov02c10_active_area;
+
+        if (fmt->which == V4L2_SUBDEV_FORMAT_TRY)
+                return 0;
+@@ -725,6 +749,26 @@ static int ov02c10_set_format(struct v4l2_subdev *sd,
+        return 0;
+ }
+
++static int ov02c10_get_selection(struct v4l2_subdev *sd,
++                                struct v4l2_subdev_state *sd_state,
++                                struct v4l2_subdev_selection *sel)
++{
++       switch (sel->target) {
++       case V4L2_SEL_TGT_CROP:
++               sel->r = *v4l2_subdev_state_get_crop(sd_state, sel->pad);
++               return 0;
++       case V4L2_SEL_TGT_CROP_DEFAULT:
++               sel->r = ov02c10_active_area;
++               return 0;
++       case V4L2_SEL_TGT_CROP_BOUNDS:
++       case V4L2_SEL_TGT_NATIVE_SIZE:
++               sel->r = ov02c10_native_area;
++               return 0;
++       default:
++               return -EINVAL;
++       }
++}
++
+ static int ov02c10_enum_mbus_code(struct v4l2_subdev *sd,
+                                  struct v4l2_subdev_state *sd_state,
+                                  struct v4l2_subdev_mbus_code_enum *code)
+@@ -758,10 +802,16 @@ static int ov02c10_enum_frame_size(struct v4l2_subdev *sd,
+ static int ov02c10_init_state(struct v4l2_subdev *sd,
+                              struct v4l2_subdev_state *sd_state)
+ {
+-       ov02c10_update_pad_format(&supported_modes[0],
+-                                 v4l2_subdev_state_get_format(sd_state, 0));
++       struct v4l2_subdev_format fmt = {
++               .which = V4L2_SUBDEV_FORMAT_TRY,
++               .format = {
++                       .code = MEDIA_BUS_FMT_SGRBG10_1X10,
++                       .width = supported_modes[0].width,
++                       .height = supported_modes[0].height,
++               },
++       };
+
+-       return 0;
++       return ov02c10_set_format(sd, sd_state, &fmt);
+ }
+
+ static const struct v4l2_subdev_video_ops ov02c10_video_ops = {
+@@ -771,6 +821,7 @@ static const struct v4l2_subdev_video_ops ov02c10_video_ops = {
+ static const struct v4l2_subdev_pad_ops ov02c10_pad_ops = {
+        .set_fmt = ov02c10_set_format,
+        .get_fmt = v4l2_subdev_get_fmt,
++       .get_selection = ov02c10_get_selection,
+        .enum_mbus_code = ov02c10_enum_mbus_code,
+        .enum_frame_size = ov02c10_enum_frame_size,
