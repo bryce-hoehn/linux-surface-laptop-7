@@ -15,14 +15,14 @@ Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-
 | Backlight                 |       ✅      |                                                                                                                                                    |
 | USB                       |   ✅  | USB-A and USB-C ports are working. Have not tested USB over Surface Connector              |
 | USB-C display output      |       ✅      |        [#11](https://github.com/bryce-hoehn/linux-surface-laptop-7/issues/11)                                                                                                                                                    |
-| Wi-Fi                     |       ✅      | Requires kernel patch [patches/0001-wifi-rfkill-hack.patch](patches/0001-wifi-rfkill-hack.patch)        |
-| Bluetooth                 |       ✅      |  [#6](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/6)                                                                                                                                                          |
+| Wi-Fi                     |       ✅      | Requires kernel patch & firmware [patches/0001-wifi-rfkill-hack.patch](patches/0001-wifi-rfkill-hack.patch)        |
+| Bluetooth                 |       ✅      |  Requires firmware [#6](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/6)                                                                                                                                                          |
 | Audio                     |       ✅      |  [#2](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/2) |
 | Touchscreen               |       ❌      |     [#13](https://github.com/bryce-hoehn/linux-surface-laptop-7/issues/13)                                                                                                                                                       |
 | Touchpad               |       ⚠️      |     Seems to partially work via mouse emulation with manual setup https://github.com/giantdwarf17/linux-surface-laptop-7/issues/5            |
 | Keyboard             |       ✅      |                                                                                        |
 | Lid switch/suspend        |       ✅      | https://github.com/giantdwarf17/linux-surface-laptop-7/issues/7#issuecomment-2750000739                                                                                                                                      |
-| Webcam |       ✅      |     https://github.com/giantdwarf17/linux-surface-laptop-7/issues/4              |
+| Webcam |       ✅      |    Rquires device tree patches [0004](patches/0004-OV02C10-camera-device-tree.patchpatches/0004-OV02C10-camera-device-tree.patch) & [0005](patches/0005-OV02C10-camera-metadata.patch) https://github.com/giantdwarf17/linux-surface-laptop-7/issues/4              |
 | RTC |  ✅  | https://github.com/giantdwarf17/linux-surface-laptop-7/issues/8 |
 
 > [!WARNING]
@@ -33,7 +33,7 @@ Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-
 Tested working on [Ubuntu concept image](https://people.canonical.com/~platform/images/ubuntu-concept/) success with all versions after Oracular. Resolute (latest) is recommended as earlier versions run into issues with unsupported core (build) packages.
 
 Steps:
-* Allocate disk partition space for dual booting **(high recommended** with bleeding-edge unsupported linux).
+* Allocate disk partition space for dual booting **(highly recommended** with bleeding-edge unsupported linux).
 * Install [Ventoy](https://www.ventoy.net/en/download.html) to a USB and drag/drop the ISO afterwards. Ventoy is required to enable keyboard support in GRUB.
 * Reboot, select the ISO with Ventoy, and install Ubuntu.
 * Install firmware blobs for Wifi, Bluetooth & GPU using [romulus-firmware-extract.sh](https://github.com/giantdwarf17/linux-surface-laptop-7/blob/main/romulus-firmware-extract.sh) - requires msitools and you will need a tethered internet connect (ethernet or mobile phone).
