@@ -15,11 +15,11 @@ Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-
 | Backlight                 |       ✅      |                                                                                                                                                    |
 | USB                       |   ✅  | USB-A and USB-C ports are working. Have not tested USB over Surface Connector              |
 | USB-C display output      |       ✅      |        [#11](https://github.com/bryce-hoehn/linux-surface-laptop-7/issues/11)                                                                                                                                                    |
-| Wi-Fi                     |       ✅      | Requires kernel patch & firmware [patches/0001-wifi-rfkill-hack.patch](patches/0001-wifi-rfkill-hack.patch)        |
+| Wi-Fi                     |       ✅      | Requires firmware and either the ELLX prebuilt kernel or the manual rfkill patch below        |
 | Bluetooth                 |       ✅      |  Requires firmware [#6](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/6)                                                                                                                                                          |
 | Audio                     |       ✅      |  [#2](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/2) |
 | Touchscreen               |       ❌      |     [#13](https://github.com/bryce-hoehn/linux-surface-laptop-7/issues/13)                                                                                                                                                       |
-| Touchpad               |       ⚠️      |     Seems to partially work via mouse emulation with manual setup https://github.com/giantdwarf17/linux-surface-laptop-7/issues/5            |
+| Touchpad               |       ⚠️      |     Works with the ELLX `iptsd` package, but can still break after suspend and may need recalibration or a Windows reboot to reset            |
 | Keyboard             |       ✅      |                                                                                        |
 | Lid switch/suspend        |       ✅      | https://github.com/giantdwarf17/linux-surface-laptop-7/issues/7#issuecomment-2750000739                                                                                                                                      |
 | Webcam |       ✅      |    Rquires device tree patches [0004](patches/0004-OV02C10-camera-device-tree.patchpatches/0004-OV02C10-camera-device-tree.patch) & [0005](patches/0005-OV02C10-camera-metadata.patch) https://github.com/giantdwarf17/linux-surface-laptop-7/issues/4              |
@@ -30,26 +30,60 @@ Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-
 
 ## Quick Start
 
-Tested working on [Ubuntu concept image](https://people.canonical.com/~platform/images/ubuntu-concept/) success with all versions after Oracular. Resolute (latest) is recommended as earlier versions run into issues with unsupported core (build) packages.
+Tested working on the [Ubuntu concept image](https://people.canonical.com/~platform/images/ubuntu-concept/) for Ubuntu 26.04. The easiest setup right now is the community-maintained ELLX prebuilts for the Surface Laptop 7 X1 Elite at <https://public.hgci.org/software/ELLX/>. They are built for Ubuntu 26.04 and should also work on Debian.
+
+These prebuilts currently cover:
+* Wi-Fi
+* Bluetooth
+* Trackpad
+* GPU
+
+> [!IMPORTANT]
+> Keep your Windows install if you can. If the trackpad gets into a bad state, the easiest known reset right now is to reboot into Windows and then back into Linux.
 
 Steps:
-* Allocate disk partition space for dual booting **(highly recommended** with bleeding-edge unsupported linux).
+* Allocate disk partition space for dual booting (**highly recommended** with bleeding-edge unsupported Linux).
 * Install [Ventoy](https://www.ventoy.net/en/download.html) to a USB and drag/drop the ISO afterwards. Ventoy is required to enable keyboard support in GRUB.
 * Reboot, select the ISO with Ventoy, and install Ubuntu.
-* Install firmware blobs for Wifi, Bluetooth & GPU using [romulus-firmware-extract.sh](https://github.com/giantdwarf17/linux-surface-laptop-7/blob/main/romulus-firmware-extract.sh) - requires msitools and you will need a tethered internet connect (ethernet or mobile phone).
+* Download the latest matching kernel packages from `https://public.hgci.org/software/ELLX/kernels/`. At the time of writing these are:
+  * `kernels/7.0.0-rc4-11/linux-headers-7.0.0-rc4+_7.0.0~rc4-gc0ce08f6e526-42_arm64.deb`
+  * `kernels/7.0.0-rc4-11/linux-image-7.0.0-rc4+_7.0.0~rc4-gc0ce08f6e526-42_arm64.deb`
+* Install the kernel packages:
 
-## Setting up Wifi
+```bash
+sudo apt install ./*.deb
+```
+
+* Install the firmware from `surface-laptop-7-firmware/proprietary-firmware.tar.gz`:
+
+```bash
+sudo tar -xf proprietary-firmware.tar.gz -C /
+```
+
+* Install `iptsd` from `iptsd/alex-lentz_iptsd/iptsd_3.1.0-1_arm64.deb` and reboot.
+* Calibrate the trackpad using the instructions from <https://github.com/alex-lentz/iptsd>.
+
+Sources:
+* ELLX kernel source: <https://github.com/ProgrammerIn-wonderland/ELLX-Kernel>
+* `iptsd` source: <https://github.com/alex-lentz/iptsd>
+
+> [!NOTE]
+> Trackpad support is much better with this setup, but suspend can still leave it in a broken state.
+
+## Manual Wifi / Kernel Setup
+
+If you want to build the kernel yourself instead of using the ELLX prebuilts, the older manual notes are below.
 
 * Download and automatically repack board-2.bin by running [fix-board-2-wifi.sh](https://github.com/giantdwarf17/linux-surface-laptop-7/blob/main/fix-board-2-wifi.sh)
 
 ```bash
-chmod +x fix-board-2.wifi
+chmod +x fix-board-2-wifi.sh
 ./fix-board-2-wifi.sh
 ```
 
 * Build kernel and install [0001-wifi-rfkill-hack.patch](https://github.com/bryce-hoehn/linux-surface-laptop-7/blob/main/patches/0001-wifi-rfkill-hack.patch)
 ```bash
-# Install dependancies
+# Install dependencies
 sudo apt install git build-essential fakeroot devscripts equivs flex bison bc libssl-dev libelf-dev dwarves dpkg-dev debhelper rsync kmod cpio fakeroot
 
 # Clone most recent concept kernel
