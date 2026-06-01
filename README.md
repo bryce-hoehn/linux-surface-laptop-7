@@ -4,7 +4,7 @@ These are my notes for getting Linux working on the Surface Laptop 7 (ARM).
 
 Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-concept-snapdragon-x-elite/48800/1)
 
-**Disclaimer:** I have no experience with upstreaming patches, the patch review process, Linux coding conventions, etc. **at all**, so for now I'm just documenting everything here in the hope that more knowledgable people can help!
+**Disclaimer:** I have no experience with upstreaming patches, the patch review process, Linux coding conventions, etc. **at all**, so for now I'm just documenting everything here in the hope that more knowledgeable people can help!
 
 ## What's working
 
@@ -19,10 +19,10 @@ Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-
 | Bluetooth                 |       ✅      |  Requires firmware [#6](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/6)                                                                                                                                                          |
 | Audio                     |       ✅      |  [#2](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/2) |
 | Touchscreen               |       ❌      |     [#13](https://github.com/bryce-hoehn/linux-surface-laptop-7/issues/13)                                                                                                                                                       |
-| Touchpad               |       ✅     |     Works with the ELLX `iptsd` package - custom configuration may be required, see below.             |
+| Touchpad               |       ✅     |     Works with the ELLX `iptsd` package - custom calibration may be required, see below.             |
 | Keyboard             |       ✅      |                                                                                        |
 | Lid switch/suspend        |       ✅      | https://github.com/giantdwarf17/linux-surface-laptop-7/issues/7#issuecomment-2750000739                                                                                                                                      |
-| Webcam |       ✅      |    Rquires device tree patches [0004](patches/0004-OV02C10-camera-device-tree.patchpatches/0004-OV02C10-camera-device-tree.patch) & [0005](patches/0005-OV02C10-camera-metadata.patch) https://github.com/giantdwarf17/linux-surface-laptop-7/issues/4              |
+| Webcam |       ✅      |    Requires device tree patches [0004](patches/0004-OV02C10-camera-device-tree.patch) & [0005](patches/0005-OV02C10-camera-metadata.patch) - [#4](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/4)              |
 | RTC |  ✅  | https://github.com/giantdwarf17/linux-surface-laptop-7/issues/8 |
 
 > [!WARNING]
@@ -43,7 +43,7 @@ These prebuilts currently cover:
 
 Steps:
 * Allocate disk partition space for dual booting (**highly recommended** with bleeding-edge unsupported Linux).
-* Install [Ventoy](https://www.ventoy.net/en/download.html) to a USB and drag/drop the ISO afterwards. Ventoy is required to enable keyboard support in GRUB.
+* Install [Ventoy](https://www.ventoy.net/en/download.html) to a USB and drag and drop the ISO afterwards. Ventoy is required to enable keyboard support in GRUB.
 * Reboot, select the ISO with Ventoy, and install Ubuntu.
 * Download the latest matching kernel packages from `https://public.hgci.org/software/ELLX/kernels/`. At the time of writing these are:
   * `kernels/7.0.0-rc4-11/linux-headers-7.0.0-rc4+_7.0.0~rc4-gc0ce08f6e526-42_arm64.deb`
@@ -60,16 +60,16 @@ sudo apt install ./*.deb
 sudo tar -xf proprietary-firmware.tar.gz -C /
 ```
 
-* Install `iptsd` from (iptsd/alex-lentz_iptsd/iptsd_3.1.0-1_arm64.deb)[https://public.hgci.org/software/ELLX/iptsd/alex-lentz_iptsd/] and reboot.
+* Install `iptsd` from [iptsd/alex-lentz_iptsd/iptsd_3.1.0-1_arm64.deb](https://public.hgci.org/software/ELLX/iptsd/alex-lentz_iptsd/) and reboot.
 * Calibrate the trackpad: 
 ```bash
 # Take note of your hidraw# - most commonly hidraw1
 sudo ./etc/scripts/iptsd-foreach -t touchpad -- echo {}
 # Calibrate using the hidraw# from the previous command
 sudo iptsd-calibrate /dev/<YOUR_HIDRAW#>
-# Track your finger _everywhere_ around the trackpad. Ctrl C -> configuration should be saved.
+# Track your finger _everywhere_ around the trackpad. Ctrl+C -> configuration should be saved.
 ```
-* Lastly, if you are noticing any problems recovering the trackpad or graphics after resuming from sleep, check out these useful fixes [here](https://public.hgci.org/software/ELLX/fixes/)
+* Lastly, if you notice any problems recovering the trackpad or graphics after resuming from sleep, check out these useful fixes [here](https://public.hgci.org/software/ELLX/fixes/)
 
 Sources:
 * ELLX kernel source: <https://github.com/ProgrammerIn-wonderland/ELLX-Kernel>
