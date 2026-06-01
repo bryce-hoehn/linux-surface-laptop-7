@@ -62,9 +62,11 @@ sudo tar -xf proprietary-firmware.tar.gz -C /
 
 * Install `iptsd` from `iptsd/alex-lentz_iptsd/iptsd_3.1.0-1_arm64.deb` and reboot.
 * Calibrate the trackpad using the instructions from <https://github.com/alex-lentz/iptsd>.
+* Lastly, if you are noticing any problems recovering the trackpad or graphics after resuming from sleep, check out these useful fixes [here](https://public.hgci.org/software/ELLX/fixes/)
 
 Sources:
 * ELLX kernel source: <https://github.com/ProgrammerIn-wonderland/ELLX-Kernel>
+* ELLX prebuilts / fixes: <https://public.hgci.org/software/ELLX>
 * `iptsd` source: <https://github.com/alex-lentz/iptsd>
 
 > [!NOTE]
