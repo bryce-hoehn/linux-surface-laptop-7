@@ -1,0 +1,81 @@
+From a4af7b9e7ac347640cf48bd9d6481171e14541ec Mon Sep 17 00:00:00 2001
+From: Oliver White <oliverjwhite07@gmail.com>
+Date: Tue, 2 Jun 2026 08:40:19 +1200
+Subject: [PATCH 2/3] usb: dwc3: add reinit-phy-on-resume quirk
+
+Some platforms gate the USB2 PHY power domain during deep sleep
+(S3) even when device_may_wakeup is set, which causes the PHY
+register state to be lost. The DWC3 fast resume path (taken when
+device_may_wakeup is true) relies on phy_pm_runtime_get_sync() to
+restore the PHY, but this is a no-op for PHY drivers that do not
+implement runtime PM (e.g. the Qualcomm eUSB2 driver).
+
+Add a new boolean quirk 'snps,reinit-phy-on-resume' that, when set,
+forces a full phy_exit() + phy_init() cycle on each USB2 PHY during
+the host-mode fast resume path. This ensures the PHY registers are
+properly re-programmed after power loss.
+
+Signed-off-by: Oliver White <oliverjwhite07@gmail.com>
+---
+ drivers/usb/dwc3/core.c | 25 +++++++++++++++++++++++++
+ drivers/usb/dwc3/core.h |  1 +
+ 2 files changed, 26 insertions(+)
+
+diff --git a/drivers/usb/dwc3/core.c b/drivers/usb/dwc3/core.c
+index 161a4d58b2ce..82baaab0d1d1 100644
+--- a/drivers/usb/dwc3/core.c
++++ b/drivers/usb/dwc3/core.c
+@@ -1854,6 +1854,8 @@ static void dwc3_get_properties(struct dwc3 *dwc)
+ 
+ 	dwc->dis_split_quirk = device_property_read_bool(dev,
+ 				"snps,dis-split-quirk");
++	dwc->reinit_phy_on_resume = device_property_read_bool(dev,
++				"snps,reinit-phy-on-resume");
+ 
+ 	dwc->lpm_nyet_threshold = lpm_nyet_threshold;
+ 	dwc->tx_de_emphasis = tx_de_emphasis;
+@@ -2561,6 +2563,29 @@ static int dwc3_resume_common(struct dwc3 *dwc, pm_message_t msg)
+ 			dwc3_writel(dwc, DWC3_GUSB2PHYCFG(i), reg);
+ 		}
+ 
++		/*
++		 * Some platforms gate USB2 PHY power during deep sleep even
++		 * when device_may_wakeup is true, causing register state to be
++		 * lost.  Re-initialize the PHY to ensure clean signalling.
++		 */
++		if (dwc->reinit_phy_on_resume && !PMSG_IS_AUTO(msg)) {
++			for (i = 0; i < dwc->num_usb2_ports; i++) {
++				int ret;
++
++				ret = phy_exit(dwc->usb2_generic_phy[i]);
++				if (ret)
++					dev_warn_ratelimited(dwc->dev,
++						"failed to exit usb2 phy %d: %d\n",
++						i, ret);
++
++				ret = phy_init(dwc->usb2_generic_phy[i]);
++				if (ret)
++					dev_warn_ratelimited(dwc->dev,
++						"failed to init usb2 phy %d: %d\n",
++						i, ret);
++			}
++		}
++
+ 		for (i = 0; i < dwc->num_usb2_ports; i++)
+ 			phy_pm_runtime_get_sync(dwc->usb2_generic_phy[i]);
+ 		for (i = 0; i < dwc->num_usb3_ports; i++)
+diff --git a/drivers/usb/dwc3/core.h b/drivers/usb/dwc3/core.h
+index a35b3db1f9f3..f64cf709e194 100644
+--- a/drivers/usb/dwc3/core.h
++++ b/drivers/usb/dwc3/core.h
+@@ -1403,6 +1403,7 @@ struct dwc3 {
+ 	unsigned		dis_metastability_quirk:1;
+ 
+ 	unsigned		dis_split_quirk:1;
++	unsigned		reinit_phy_on_resume:1;
+ 	unsigned		async_callbacks:1;
+ 	unsigned		sys_wakeup:1;
+ 	unsigned		wakeup_configured:1;
+-- 
+2.53.0
+

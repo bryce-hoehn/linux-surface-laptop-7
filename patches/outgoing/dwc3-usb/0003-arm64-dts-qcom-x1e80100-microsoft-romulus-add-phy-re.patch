@@ -1,0 +1,31 @@
+From 1f17a720f3957516b8156a6030b59da20eea7b3a Mon Sep 17 00:00:00 2001
+From: Oliver White <oliverjwhite07@gmail.com>
+Date: Tue, 2 Jun 2026 08:40:21 +1200
+Subject: [PATCH 3/3] arm64: dts: qcom: x1e80100-microsoft-romulus: add
+ phy-reinit-on-resume
+
+The Surface Laptop 7 gates the USB2 PHY power domain during deep sleep, causing the PHY register state to be lost. When the DWC3 multi-port controller resumes via the fast path (device_may_wakeup), the PHY is not re-initialized and USB2 devices (such as the wired keyboard on the USB-A port) may exhibit corrupted signalling, e.g. stuck modifier key reports.
+
+Enable the 'snps,reinit-phy-on-resume' quirk to force a full PHY re-initialization cycle on resume.
+---
+ arch/arm64/boot/dts/qcom/x1e80100-microsoft-romulus.dtsi | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/arch/arm64/boot/dts/qcom/x1e80100-microsoft-romulus.dtsi b/arch/arm64/boot/dts/qcom/x1e80100-microsoft-romulus.dtsi
+index 4356cb88e2bd..2de244ffb54d 100644
+--- a/arch/arm64/boot/dts/qcom/x1e80100-microsoft-romulus.dtsi
++++ b/arch/arm64/boot/dts/qcom/x1e80100-microsoft-romulus.dtsi
+@@ -1731,6 +1731,10 @@ &usb_mp {
+ 	status = "okay";
+ };
+ 
++&usb_mp_dwc3 {
++	snps,reinit-phy-on-resume;
++};
++
+ &usb_mp_hsphy0 {
+ 	vdd-supply = <&vreg_l2e>;
+ 	vdda12-supply = <&vreg_l2j>;
+-- 
+2.53.0
+

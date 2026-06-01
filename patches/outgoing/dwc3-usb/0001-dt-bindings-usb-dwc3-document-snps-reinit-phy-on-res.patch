@@ -1,0 +1,41 @@
+From 6ec7068bff33becf323b025c7f456b9854719a21 Mon Sep 17 00:00:00 2001
+From: Oliver White <oliverjwhite07@gmail.com>
+Date: Tue, 2 Jun 2026 08:40:17 +1200
+Subject: [PATCH 1/3] dt-bindings: usb: dwc3: document
+ snps,reinit-phy-on-resume
+
+Add the documentation for the 'snps,reinit-phy-on-resume' boolean
+property. When set, the DWC3 core will perform a full phy_exit() +
+phy_init() cycle on each USB2 PHY during the host-mode fast resume
+path. This is needed on platforms where the USB2 PHY power domain
+is gated during deep sleep even when device_may_wakeup is true.
+
+Signed-off-by: Oliver White <oliverjwhite07@gmail.com>
+---
+ .../devicetree/bindings/usb/snps,dwc3-common.yaml      | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/usb/snps,dwc3-common.yaml b/Documentation/devicetree/bindings/usb/snps,dwc3-common.yaml
+index 6c0b8b653824..d12f6ae81ab8 100644
+--- a/Documentation/devicetree/bindings/usb/snps,dwc3-common.yaml
++++ b/Documentation/devicetree/bindings/usb/snps,dwc3-common.yaml
+@@ -212,6 +212,16 @@ properties:
+       When set, run the SOF/ITP counter based on ref_clk.
+     type: boolean
+ 
++  snps,reinit-phy-on-resume:
++    description:
++      When set, the DWC3 will re-initialize the USB2 PHYs during the
++      host-mode fast resume path (device_may_wakeup). Some platforms
++      cut PHY power during deep sleep even when USB wake is enabled,
++      and the standard PHY runtime PM resume is insufficient to restore
++      the PHY register state. This quirk forces a full phy_exit() +
++      phy_init() cycle on each USB2 PHY.
++    type: boolean
++
+   snps,resume-hs-terminations:
+     description:
+       Fix the issue of HS terminations CRC error on resume by enabling this
+-- 
+2.53.0
+
