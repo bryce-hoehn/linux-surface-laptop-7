@@ -19,7 +19,7 @@ Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-
 | Bluetooth                 |       ✅      |  Requires firmware [#6](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/6)                                                                                                                                                          |
 | Audio                     |       ✅      |  [#2](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/2) |
 | Touchscreen               |       ❌      |     [#13](https://github.com/bryce-hoehn/linux-surface-laptop-7/issues/13)                                                                                                                                                       |
-| Touchpad               |       ⚠️      |     Works with the ELLX `iptsd` package, but can still break after suspend and may need recalibration or a Windows reboot to reset            |
+| Touchpad               |       ✅     |     Works with the ELLX `iptsd` package - custom configuration may be required, see below.             |
 | Keyboard             |       ✅      |                                                                                        |
 | Lid switch/suspend        |       ✅      | https://github.com/giantdwarf17/linux-surface-laptop-7/issues/7#issuecomment-2750000739                                                                                                                                      |
 | Webcam |       ✅      |    Rquires device tree patches [0004](patches/0004-OV02C10-camera-device-tree.patchpatches/0004-OV02C10-camera-device-tree.patch) & [0005](patches/0005-OV02C10-camera-metadata.patch) https://github.com/giantdwarf17/linux-surface-laptop-7/issues/4              |
@@ -60,8 +60,15 @@ sudo apt install ./*.deb
 sudo tar -xf proprietary-firmware.tar.gz -C /
 ```
 
-* Install `iptsd` from `iptsd/alex-lentz_iptsd/iptsd_3.1.0-1_arm64.deb` and reboot.
-* Calibrate the trackpad using the instructions from <https://github.com/alex-lentz/iptsd>.
+* Install `iptsd` from (iptsd/alex-lentz_iptsd/iptsd_3.1.0-1_arm64.deb)[https://public.hgci.org/software/ELLX/iptsd/alex-lentz_iptsd/] and reboot.
+* Calibrate the trackpad: 
+```bash
+# Take note of your hidraw# - most commonly hidraw1
+sudo ./etc/scripts/iptsd-foreach -t touchpad -- echo {}
+# Calibrate using the hidraw# from the previous command
+sudo iptsd-calibrate /dev/<YOUR_HIDRAW#>
+# Track your finger _everywhere_ around the trackpad. Ctrl C -> configuration should be saved.
+```
 * Lastly, if you are noticing any problems recovering the trackpad or graphics after resuming from sleep, check out these useful fixes [here](https://public.hgci.org/software/ELLX/fixes/)
 
 Sources:
