@@ -1,0 +1,77 @@
+Libcamera patches adding a sensor helper for the ov02c10 as well as some hackyadjusting of some global exposure constants. For some ungodly reason libcamera only has partial support for reading per-sensor yaml tuning so this is the easiest way for now. I'm working on a patch series to allow this tuning so we can fully upstream this cameras config. Feel free to adjust the constants below, I've played around for a bit and tried my best to understand how each algorithm works but if you find something better let me know.
+
+
+Signed-off-by: Oliver <oliverjwhite07@gmail.com>
+
+ src/ipa/libipa/camera_sensor_helper.cpp | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/src/ipa/libipa/camera_sensor_helper.cpp b/src/ipa/libipa/camera_sensor_helper.cpp
+index 1111111..2222222 100644
+--- a/src/ipa/libipa/camera_sensor_helper.cpp
++++ b/src/ipa/libipa/camera_sensor_helper.cpp
+@@ -789,6 +789,18 @@
+ };
+ REGISTER_CAMERA_SENSOR_HELPER("ov13858", CameraSensorHelperOv13858)
+
++class CameraSensorHelperOv02c10 : public CameraSensorHelper
++{
++public:
++	CameraSensorHelperOv02c10()
++	{
++		/* From Linux kernel driver: black level 0x40 at 10 bits. */
++		blackLevel_ = 4096;
++		gain_ = AnalogueGainLinear{ 1, 0, 0, 128 };
++	}
++};
++REGISTER_CAMERA_SENSOR_HELPER("ov02c10", CameraSensorHelperOv02c10)
++
+ class CameraSensorHelperVd55g1 : public CameraSensorHelper
+ {
+ public:
+--
+2.43.0
+
+NOT FOR UPSTREAM — ov02c10-specific AGC & gamma defaults
+Adjust the global default values for gamma and exposure.
+
+Ideally, the AGC target, AGC step size, and default gamma should be
+configurable per-sensor via the YAML tuning file rather than hardcoded.
+
+--- a/src/ipa/simple/algorithms/agc.cpp
++++ b/src/ipa/simple/algorithms/agc.cpp
+@@ -26,9 +26,9 @@
+ 
+ /*
+  * The exposure is optimal when the mean sample value of the histogram is
+- * in the middle of the range.
++ * in the middle of the range. Lowered for ov02c10 which overexposes at 2.5.
+  */
+-static constexpr float kExposureOptimal = kExposureBinsCount / 2.0;
++static constexpr float kExposureOptimal = 1.5;
+ 
+ /*
+  * This implements the hysteresis for the exposure adjustment.
+@@ -46,8 +46,9 @@
+ 	/*
+ 	 * kExpDenominator of 10 gives ~10% increment/decrement;
+ 	 * kExpDenominator of 5 - about ~20%
++	 * Set to 4 for ~25% step (faster convergence on ov02c10).
+ 	 */
+-	static constexpr uint8_t kExpDenominator = 10;
++	static constexpr uint8_t kExpDenominator = 4;
+ 	static constexpr uint8_t kExpNumeratorUp = kExpDenominator + 1;
+ 	static constexpr uint8_t kExpNumeratorDown = kExpDenominator - 1;
+ 
+
+--- a/src/ipa/simple/algorithms/adjust.h
++++ b/src/ipa/simple/algorithms/adjust.h
+@@ -17,7 +17,7 @@
+ 
+ namespace ipa::soft::algorithms {
+ 
+-constexpr float kDefaultGamma = 2.2f;
++constexpr float kDefaultGamma = 2.6f;
+ 
+ class Adjust : public Algorithm
+ {
