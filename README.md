@@ -22,7 +22,7 @@ Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-
 | Touchpad               |       ✅     |     Works with the ELLX `iptsd` package - custom calibration may be required, see below.             |
 | Keyboard             |       ✅      |                                                                                        |
 | Lid switch/suspend        |       ✅      | https://github.com/giantdwarf17/linux-surface-laptop-7/issues/7#issuecomment-2750000739                                                                                                                                      |
-| Webcam |       ✅      |    Requires device tree patches [0004](patches/outgoing/ov02c10/0004-OV02C10-camera-device-tree.patch) & [0005](patches/outgoing/ov02c10/0005-OV02C10-camera-metadata.patch) - [#4](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/4)              |
+| Camera |       ✅      |    Requires device tree patches [0004](patches/outgoing/ov02c10/0004-OV02C10-camera-device-tree.patch) & [0005](patches/outgoing/ov02c10/0005-OV02C10-camera-metadata.patch) - [#4](https://github.com/giantdwarf17/linux-surface-laptop-7/issues/4) — see [config/OV02C10-camera](config/OV02C10-camera/) for libcamera tuning |
 | RTC |  ✅  | https://github.com/giantdwarf17/linux-surface-laptop-7/issues/8 |
 
 > [!WARNING]
