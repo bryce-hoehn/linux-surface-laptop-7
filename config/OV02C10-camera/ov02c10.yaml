@@ -11,5 +11,8 @@ algorithms:
                 -0.4641, 1.6539, -0.1899,
                 -0.0633, -0.7242, 1.7875 ]
   - Adjust:
+      gamma: 2.4
+      contrast: 1.0
+      saturation: 1.2
   - Agc:
 ...
