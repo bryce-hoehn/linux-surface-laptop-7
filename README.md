@@ -1,10 +1,8 @@
 # Linux on the Surface Laptop 7 (ARM)
 
-These are my notes for getting Linux working on the Surface Laptop 7 (ARM).
+Community notes for getting Linux working on the Surface Laptop 7 (ARM).
 
-Based on the [Ubuntu Concept image](https://discourse.ubuntu.com/t/ubuntu-24-10-concept-snapdragon-x-elite/48800/1)
-
-**Disclaimer:** I have no experience with upstreaming patches, the patch review process, Linux coding conventions, etc. **at all**, so for now I'm just documenting everything here in the hope that more knowledgeable people can help!
+**Disclaimer:** Surface Laptop 7 Linux support is highly experimental. Many of these fixes are quite hacky and may cause unpredictable behavior. Use at your own risk.
 
 ## What's working
 
@@ -107,10 +105,16 @@ sudo reboot
 
 ## Tips & Tricks
 
+### Factory MAC Addresses
+Both the ELLX prebuilds and the manual WiFi/Bluetooth instructions currently make up a random MAC address on each boot. This breaks DHCP reservations and may cause your device to sign out of the WiFi network each boot. An experimental patch is available [here](https://github.com/valeronm/sl7-mac).
+
 ### Fixing Firefox crashes
 If you experience any issues with Firefox, try switching from snap to the .deb or flatpak package.
 
 # Credits
-* dwhinham for readme template and patches from Surface Pro 11: https://github.com/dwhinham/linux-surface-pro-11
-* qzed from linux-surface: https://github.com/linux-surface/linux-surface
+* [dwhinham](https://github.com/dwhinham) for readme template and patches from Surface Pro 11: https://github.com/dwhinham/linux-surface-pro-11
+* [qzed](https://github.com/qzed) from linux-surface: https://github.com/linux-surface/linux-surface
+* [ProgrammerIn-wonderland](https://github.com/ProgrammerIn-wonderland) for the precompiled ELLX kernel builds
+* [valeronm](https://github.com/valeronm) for the MAC address patch: https://github.com/valeronm/sl7-mac
+* all of our contributors / maintainers
 * everyone from the ubuntu-concept issue thread: https://bugs.launchpad.net/ubuntu-concept/+bug/2084951
