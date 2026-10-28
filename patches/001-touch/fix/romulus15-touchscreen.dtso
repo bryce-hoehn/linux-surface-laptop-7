@@ -1,0 +1,106 @@
+// SPDX-License-Identifier: BSD-3-Clause
+/dts-v1/;
+/plugin/;
+
+/*
+ * Experimental Romulus15 bring-up for ELLX kernel 557ed1f34df3.
+ * Wiring reference: aarch64-laptops/build,
+ * misc/microsoft-surface-romulus13_and_15/{DSDT,SSDT}.dsl.
+ * Compile and merge offline; hardware operation is not verified.
+ */
+
+/ {
+	compatible = "microsoft,romulus15";
+};
+
+&{/} {
+	vreg_touchscreen: touchscreen-power-regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "touchscreen-power";
+		gpio = <&tlmm 64 0>;
+		enable-active-high;
+		startup-delay-us = <500000>;
+	};
+};
+
+&tlmm {
+	ts_qspi_data_clk: ts-qspi-data-clk-state {
+		pins = "gpio40", "gpio41", "gpio42";
+		function = "qup1_se2";
+		drive-strength = <6>;
+		bias-disable;
+	};
+
+	ts_qspi_cs: ts-qspi-cs-state {
+		pins = "gpio43";
+		function = "qup1_se2";
+		drive-strength = <6>;
+		bias-disable;
+	};
+
+	ts_qspi_data23: ts-qspi-data23-state {
+		pins = "gpio49", "gpio50";
+		function = "qup1_se2";
+		drive-strength = <6>;
+		bias-disable;
+	};
+
+	ts_irq: ts-irq-state {
+		pins = "gpio51";
+		function = "gpio";
+		input-enable;
+		bias-pull-up;
+	};
+
+	ts_reset_assert: ts-reset-assert-state {
+		pins = "gpio48";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+		output-low;
+	};
+
+	ts_reset_deassert: ts-reset-deassert-state {
+		pins = "gpio48";
+		function = "gpio";
+		drive-strength = <2>;
+		bias-disable;
+		output-high;
+	};
+};
+
+&gpi_dma1 {
+	status = "okay";
+};
+
+&spi10 {
+	#address-cells = <1>;
+	#size-cells = <0>;
+	compatible = "qcom,geni-spi-qspi";
+	status = "okay";
+	spi-max-frequency = <20000000>;
+	qcom,qspi-read-opcode = <0xeb>;
+	qcom,qspi-read-dummy-clocks = <8>;
+	qcom,qspi-read-cmd-bytes = <4>;
+
+	pinctrl-names = "default";
+	pinctrl-0 = <&ts_qspi_data_clk &ts_qspi_cs &ts_qspi_data23 &ts_irq>;
+
+	/* QCOM_GPI_QSPI is 4 in this ELLX kernel's DMA binding. */
+	dmas = <&gpi_dma1 0 2 4>, <&gpi_dma1 1 2 4>;
+	dma-names = "tx", "rx";
+
+	touchscreen@0 {
+		compatible = "hid-over-spi";
+		reg = <0>;
+		spi-max-frequency = <20000000>;
+
+		interrupt-parent = <&tlmm>;
+		interrupts = <51 2>; /* IRQ_TYPE_EDGE_FALLING */
+
+		vdd-supply = <&vreg_touchscreen>;
+		pinctrl-names = "active", "reset";
+		pinctrl-0 = <&ts_reset_deassert>;
+		pinctrl-1 = <&ts_reset_assert>;
+	};
+};
